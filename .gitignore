@@ -1,0 +1,60 @@
+# ---- Python ----
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.pkl
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# ---- Jupyter Notebooks ----
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ---- VS Code ----
+.vscode/
+.settings/
+
+# ---- OS / System ----
+.DS_Store
+Thumbs.db
+
+# ---- Environment Files ----
+.env
+*.env
+
+# ---- Data Folders ----
+# Raw and cleaned data should not be pushed to GitHub
+data/raw/*
+data/cleaned/*
+
+# Sample CSVs (optional)
+# !data/raw/sample.csv
+# !data/cleaned/sample_clean.csv
+
+# ---- Logs ----
+*.log
+
+# ---- Build / Dist ----
+build/
+dist/
+*.egg-info/
+
+# ---- Cache ----
+.cache/
+__pycache__/
+
+# ---- Coverage / Testing ----
+htmlcov/
+.coverage
+coverage.xml
+pytest_cache/
+
+# ---- Temporary Files ----
+*.tmp
+*.temp
+*.bak
