@@ -1,19 +1,41 @@
 # src/preprocess.py
+"""
+Preprocess raw Google Play reviews:
+- Remove duplicates and missing data
+- Filter English reviews
+- Normalize dates to YYYY-MM-DD
+- Save cleaned CSV
+"""
 
 import pandas as pd
 from dateutil import parser
 from langdetect import detect, DetectorFactory
+from langdetect.lang_detect_exception import LangDetectException
 import os
 
-DetectorFactory.seed = 0  # ensure consistent language detection
+DetectorFactory.seed = 0  # Ensure consistent language detection results
+
 
 def is_english(text):
+    """
+    Checks if the given text is English using langdetect.
+
+    Args:
+        text (str): Text to check
+
+    Returns:
+        bool: True if English, False otherwise
+    """
     try:
         return detect(text) == "en"
-    except:
+    except LangDetectException:
         return False
 
+
 def clean_reviews():
+    """
+    Reads raw reviews CSV, preprocesses it, and saves cleaned CSV.
+    """
     # Read raw CSV
     df = pd.read_csv("data/raw/raw_reviews.csv")
 
@@ -30,7 +52,9 @@ def clean_reviews():
     df = df[df["review"].apply(is_english)]
 
     # Normalize dates to YYYY-MM-DD
-    df["date"] = df["date"].apply(lambda x: parser.parse(str(x)).strftime("%Y-%m-%d"))
+    df["date"] = df["date"].apply(
+        lambda x: parser.parse(str(x)).strftime("%Y-%m-%d")
+    )
 
     # Reset index
     df.reset_index(drop=True, inplace=True)
@@ -44,6 +68,7 @@ def clean_reviews():
 
     print("Preprocessing complete. Saved to data/cleaned/clean_reviews.csv")
     print(f"Total reviews after cleaning: {len(df)}")
+
 
 if __name__ == "__main__":
     clean_reviews()
