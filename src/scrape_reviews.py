@@ -1,101 +1,78 @@
-# Library to scrape Google Play reviews
+# src/scrape_reviews.py
+
 from google_play_scraper import Sort, reviews
-import pandas as pd  # For data manipulation and storage
-# For detecting language of reviews
-from langdetect import detect, DetectorFactory
-import time  # To add delays and avoid rate limits
-
-DetectorFactory.seed = 0  # Ensure consistent language detection results
-
-# Function to check if a review is in English
-
-
-def is_english(text):
-    try:
-        return detect(text) == 'en'
-    except BaseException:
-        return False
+import pandas as pd
+import time
 
 # Function to scrape reviews for a single bank app
-
-
 def scrape_bank_reviews(app_id, bank_name, target_count=450, batch_size=200):
     """
     Scrapes reviews for a single bank app from Google Play Store.
-    Ensures at least target_count English reviews if possible.
+    Collects all reviews without language filtering.
     """
-    all_reviews = []  # Store collected reviews
-    token = None  # continuation token for pagination
-    attempts = 0   # Safety counter to prevent infinite loop
+    all_reviews = []
+    token = None
+    attempts = 0
 
     print(f"Starting scrape for {bank_name}...")
 
-    # Loop until we collect enough English reviews or reach attempt limit
     while len(all_reviews) < target_count and attempts < 10:
         result, token = reviews(
             app_id,
-            lang="en",  # Scrape English reviews
-            country="us",  # Country context
-            sort=Sort.NEWEST,  # Get newest reviews first
-            count=batch_size,  # Number of reviews per batch
-            continuation_token=token  # Token for pagination
+            lang="en",
+            country="us",
+            sort=Sort.NEWEST,
+            count=batch_size,
+            continuation_token=token
         )
 
         if not result:
             print("No more reviews returned by API.")
             break
 
-        # Process each review in the batch
         for r in result:
-            # Get review text and remove extra spaces
             review_text = r.get("content", "").strip()
-            if review_text and is_english(
-                    review_text):  # Only keep English reviews
+            if review_text:  # keep all reviews, even non-English
                 all_reviews.append({
                     "review": review_text,
-                    "rating": r.get("score"),  # Star rating
-                    "date": r.get("at"),  # Review date
-                    "bank": bank_name,  # Bank name
-                    "source": "Google Play"  # Source of review
+                    "rating": r.get("score"),
+                    "date": r.get("at"),
+                    "bank": bank_name,
+                    "source": "Google Play"
                 })
-                if len(all_reviews) >= target_count:  # Stop if target reached
+                if len(all_reviews) >= target_count:
                     break
 
         attempts += 1
-        time.sleep(1)  # Polite delay to avoid rate limits
+        time.sleep(1)
 
-    print(f"{bank_name}: {len(all_reviews)} English reviews collected.")
-    return pd.DataFrame(all_reviews)  # Convert list of reviews to DataFrame
+    print(f"{bank_name}: {len(all_reviews)} reviews collected.")
+    return pd.DataFrame(all_reviews)
 
-# Main function to scrape all three banks
-
-
+# Main function to scrape all banks
 def main():
     apps = {
-        "CBE": {"app_id": "com.combanketh.mobilebanking", "target_count": 500},
-        "BOA": {"app_id": "com.boa.boaMobileBanking", "target_count": 450},
-        "Dashen": {"app_id": "com.dashen.dashensuperapp", "target_count": 450}
+        "CBE": {"app_id": "com.combanketh.mobilebanking", "target_count": 800},
+        "BOA": {"app_id": "com.boa.boaMobileBanking", "target_count": 800},
+        "Dashen": {"app_id": "com.dashen.dashensuperapp", "target_count": 800}
     }
 
-    df_list = []  # To store DataFrames for each bank
+    df_list = []
 
-    # Loop through each bank and scrape reviews
     for bank, info in apps.items():
         df = scrape_bank_reviews(
             info["app_id"],
             bank,
-            target_count=info["target_count"])
+            target_count=info["target_count"]
+        )
         df_list.append(df)
 
-    # Combine all bank reviews into a single DataFrame
     final_df = pd.concat(df_list, ignore_index=True)
-    # Save to CSV
+
+    # Save raw CSV
     final_df.to_csv("data/raw/raw_reviews.csv", index=False, encoding="utf-8")
-
     print("Scraping complete. Saved to data/raw/raw_reviews.csv")
-    print(f"Total English reviews collected: {len(final_df)}")
+    print(f"Total reviews collected: {len(final_df)}")
 
-
-# Run main function when script is executed
 if __name__ == "__main__":
     main()
