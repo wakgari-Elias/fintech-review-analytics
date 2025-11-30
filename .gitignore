@@ -58,3 +58,7 @@ pytest_cache/
 *.tmp
 *.temp
 *.bak
+*.csv
+data/
+*.json
+*.xlsx
