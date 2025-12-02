@@ -260,6 +260,207 @@ python -m src.thematic_analysis
 
 
 
+# 🚀 **Task 3 & Task 4 – Data Storage, Insights, and Visualizations**
+
+This section summarizes the work completed for **Task 3** (PostgreSQL storage) and **Task 4** (Insights & Recommendations) as part of the Fintech Review Analytics project.
+The goal of these tasks is to move from *cleaned review data* → *persistent storage* → *analysis, insights, and visuals*.
+
+---
+
+# 🗄️ **Task 3 – Store Cleaned Data in PostgreSQL**
+
+### ✔ **Objective**
+
+Design and implement a PostgreSQL database to store the cleaned and processed mobile banking reviews.
+
+### ✔ **Steps Completed**
+
+---
+
+### **1. PostgreSQL Setup**
+
+* Installed PostgreSQL locally (v18).
+* Created a new database:
+
+```sql
+CREATE DATABASE bank_reviews;
+```
+
+---
+
+### **2. Database Schema**
+
+#### **Banks Table**
+
+Stores bank metadata.
+
+| Column    | Type               | Description     |
+| --------- | ------------------ | --------------- |
+| bank_id   | SERIAL PRIMARY KEY | Unique ID       |
+| bank_name | VARCHAR(100)       | Bank name       |
+| app_name  | VARCHAR(100)       | Mobile app name |
+
+#### **Reviews Table**
+
+Stores all cleaned reviews.
+
+| Column          | Type                          | Description                   |
+| --------------- | ----------------------------- | ----------------------------- |
+| review_id       | SERIAL PRIMARY KEY            | Unique review ID              |
+| bank_id         | INT REFERENCES banks(bank_id) | Link to bank                  |
+| review_text     | TEXT                          | Cleaned review                |
+| rating          | INT                           | User rating                   |
+| review_date     | DATE                          | Review timestamp              |
+| sentiment_label | VARCHAR(20)                   | Positive / Negative / Neutral |
+| sentiment_score | FLOAT                         | Model-generated score         |
+| source          | VARCHAR(50)                   | Google Play                   |
+
+---
+
+### **3. Data Insertion Script**
+
+A Python script (`src/insert_reviews.py`) was created to insert cleaned reviews:
+
+* Establishes connection via psycopg2.
+* Inserts bank metadata.
+* Inserts all cleaned reviews from:
+
+```
+data/cleaned/clean_reviews.csv
+```
+
+---
+
+### **4. Data Verification Queries**
+
+Examples:
+
+```sql
+-- Count reviews per bank
+SELECT b.bank_name, COUNT(r.review_id)
+FROM reviews r
+JOIN banks b ON r.bank_id = b.bank_id
+GROUP BY b.bank_name;
+
+-- Average rating
+SELECT bank_id, AVG(rating) FROM reviews GROUP BY bank_id;
+```
+
+---
+
+# 📊 **Task 4 – Insights, Visualizations & Recommendations**
+
+### ✔ **Objective**
+
+Analyze sentiments, themes, and ratings to produce insights and improvement recommendations.
+
+---
+
+# 🔍 **1. Insights per Bank**
+
+### **Example Deliverables (from the analysis)**
+
+#### ⭐ **CBE**
+
+* **Drivers:** Fast transactions, improved UI, quick notifications
+* **Pain points:** Frequent login failures, crashes, slow loading
+
+#### ⭐ **BOA**
+
+* **Drivers:** Smooth UI, modern design
+* **Pain points:** OTP delays, session timeouts
+
+#### ⭐ **Dashen**
+
+* **Drivers:** Reliable transfers, easy navigation
+* **Pain points:** Update errors, app freezes
+
+---
+
+# 🔄 **2. Bank Comparison**
+
+* CBE has **more negative reviews**, mainly performance issues.
+* BOA shows **higher average ratings**, cleaner UX.
+* Dashen is **balanced**, but struggles with stability after updates.
+
+---
+
+# 🎯 **3. Recommendations**
+
+### **Per Bank (Example)**
+
+#### **CBE**
+
+* Improve authentication flow
+* Add offline features for basic actions
+
+#### **BOA**
+
+* Enhance OTP reliability
+* Simplify onboarding steps
+
+#### **Dashen**
+
+* Optimize update stability
+* Improve crash reporting system
+
+---
+
+# 📈 **4. Visualizations**
+
+Created inside:
+
+```
+notebooks/task4_insights.ipynb
+```
+
+### **Included Plots**
+
+* Sentiment distribution per bank
+* Rating distribution
+* Sentiment trends over time
+* Keyword/theme frequency
+* WordClouds
+
+All exported under:
+
+```
+outputs/task4/
+```
+
+---
+
+# ⚖️ **5. Ethics & Bias Notice**
+
+* Online reviews often contain **negative bias** (people complain more than praise).
+* Some reviews may be **duplicates or spam**.
+* App updates can cause **time-based sentiment shifts**.
+* Sentiment model mistakes may affect results.
+
+This section is included in the notebook.
+
+---
+
+# 📁 **Key Files for Task 3 & 4**
+
+```
+src/
+│── insert_reviews.py     # Task 3 database insert script
+│── task4_insights.py     # Task 4 insights + visualization code
+
+notebooks/
+│── task4_insights.ipynb  # Full analysis & plots
+
+data/
+│── cleaned/clean_reviews.csv
+│── processed/*.csv
+
+outputs/task4/*.png       # Saved charts
+```
+
+
+
+
 
 
 
